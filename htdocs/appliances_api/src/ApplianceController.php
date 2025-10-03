@@ -12,35 +12,27 @@ class ApplianceController {
     /* ---------- Validation ---------- */
     private function validatePayload(array $input, bool $isCreate = true): array {
         $errors = [];
-
-        // required fields on create
         $required = ['sku','name','brand','category','price','stock','warranty_months'];
         if ($isCreate) {
             foreach ($required as $f) {
                 if (!array_key_exists($f, $input)) $errors[$f] = 'required';
             }
         }
-
-        // types & rules (check only if provided)
         if (isset($input['sku']) && (!is_string($input['sku']) || $input['sku'] === '')) $errors['sku'] = 'must be non-empty string';
         if (isset($input['name']) && (!is_string($input['name']) || $input['name'] === '')) $errors['name'] = 'must be non-empty string';
         if (isset($input['brand']) && (!is_string($input['brand']) || $input['brand'] === '')) $errors['brand'] = 'must be non-empty string';
         if (isset($input['category']) && (!is_string($input['category']) || $input['category'] === '')) $errors['category'] = 'must be non-empty string';
-
         if (isset($input['price']) && (!is_numeric($input['price']) || $input['price'] < 0)) $errors['price'] = 'must be >= 0';
         if (isset($input['stock']) && (!is_numeric($input['stock']) || $input['stock'] < 0)) $errors['stock'] = 'must be >= 0';
         if (isset($input['warranty_months']) && (!is_numeric($input['warranty_months']) || $input['warranty_months'] < 0)) $errors['warranty_months'] = 'must be >= 0';
-
         if (isset($input['energy_rating'])) {
             if ($input['energy_rating'] !== null && (!is_numeric($input['energy_rating']) || $input['energy_rating'] < 1 || $input['energy_rating'] > 5)) {
                 $errors['energy_rating'] = 'must be 1-5 or null';
             }
         }
-
         return $errors;
     }
 
-    /* ---------- Helpers ---------- */
     private function readJsonBody(): array {
         $raw = file_get_contents('php://input');
         $data = json_decode($raw, true);
@@ -57,7 +49,7 @@ class ApplianceController {
         $params = [
             'category'   => $_GET['category']   ?? null,
             'brand'      => $_GET['brand']      ?? null,
-            'q'          => $_GET['q']          ?? null, // search in name/sku
+            'q'          => $_GET['q']          ?? null,
             'min_price'  => $_GET['min_price']  ?? null,
             'max_price'  => $_GET['max_price']  ?? null,
             'min_stock'  => $_GET['min_stock']  ?? null,
@@ -160,12 +152,11 @@ class ApplianceController {
         ]);
 
         $id = (int)$this->db->lastInsertId();
-        $this->show($id); // ส่งรูปแบบเดียวกับ show
+        $this->show($id);
     }
 
     // PUT/PATCH /api/appliances/{id}
     public function update(int $id): void {
-        // มีไหม
         $stmt = $this->db->prepare("SELECT * FROM appliances WHERE id = :id");
         $stmt->execute([':id' => $id]);
         $existing = $stmt->fetch();
@@ -177,14 +168,12 @@ class ApplianceController {
         $errors = $this->validatePayload($input, false);
         if ($errors) Response::badRequest(['validation' => $errors]);
 
-        // ถ้ามี sku ใหม่ ต้องไม่ซ้ำกับคนอื่น
         if (isset($input['sku'])) {
             $check = $this->db->prepare("SELECT 1 FROM appliances WHERE sku = :sku AND id <> :id");
             $check->execute([':sku' => $input['sku'], ':id' => $id]);
             if ($check->fetch()) Response::conflict('SKU already exists');
         }
 
-        // build dynamic set
         $fields = [];
         $bind = [':id' => $id];
         $updatable = ['sku','name','brand','category','price','stock','warranty_months','energy_rating'];
@@ -200,7 +189,6 @@ class ApplianceController {
         $stmt = $this->db->prepare($sql);
         $stmt->execute($bind);
 
-        // ส่งข้อมูลล่าสุด
         $this->show($id);
     }
 
