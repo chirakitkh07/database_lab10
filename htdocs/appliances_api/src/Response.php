@@ -1,8 +1,10 @@
 <?php
+// src/Response.php
 class Response {
     public static function json($data, int $status = 200, array $extraHeaders = []) {
         http_response_code($status);
         header('Content-Type: application/json; charset=utf-8');
+        // CORS
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
         header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
@@ -12,6 +14,7 @@ class Response {
         echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
+
     public static function ok($data) { self::json(['data' => $data], 200); }
     public static function created($data) { self::json(['message' => 'Created', 'data' => $data], 201); }
     public static function updated($data) { self::json(['message' => 'Updated', 'data' => $data], 200); }

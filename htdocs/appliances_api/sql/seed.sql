@@ -18,4 +18,20 @@ INSERT INTO appliances (sku, name, brand, category, price, stock, warranty_month
 ('AR-3.5L', 'หม้อทอดไร้น้ำมัน 3.5 ลิตร', 'Sharpix', 'เครื่องครัว', 1490.00, 19, 12, 3),
 ('FR-300S', 'ตู้เย็น 3 ประตู 300L', 'Daika', 'ตู้เย็น', 12990.00, 7, 48, 5),
 ('TV-65UHD', 'ทีวี 65 นิ้ว UHD Smart TV', 'Hitano', 'ทีวี', 22900.00, 4, 36, 5),
-('AC-18000', 'แอร์ 18000 BTU อินเวอร์เตอร์', 'Sangsung', 'แอร์', 18990.00, 5, 60, 5);
+('AC-18000', 'แอร์ 18000 BTU อินเวอร์เตอร์', 'Sangsung', 'แอร์', 18990.00, 5, 60, 5);CREATE DATABASE IF NOT EXISTS webapi_demo
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE webapi_demo;
+
+CREATE TABLE IF NOT EXISTS appliances (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  sku VARCHAR(32) NOT NULL UNIQUE,
+  name VARCHAR(150) NOT NULL,
+  brand VARCHAR(80) NOT NULL,
+  category VARCHAR(80) NOT NULL,
+  price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
+  stock INT NOT NULL DEFAULT 0 CHECK (stock >= 0),
+  warranty_months TINYINT UNSIGNED NOT NULL DEFAULT 12,
+  energy_rating TINYINT UNSIGNED NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
